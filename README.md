@@ -1,4 +1,4 @@
-# 📌 Blazor To-Do App
+# Blazor To-Do App
 
 This is a simple **Blazor Server** application for managing a **To-Do List**.\
 It uses **C#**, **Entity Framework Core**, and **SQLite** for persistence.
@@ -6,7 +6,7 @@ It uses **C#**, **Entity Framework Core**, and **SQLite** for persistence.
 
 ---
 
-## 🛠 Prerequisites
+## Prerequisites
 
 Ensure you have the following installed:
 
@@ -15,7 +15,7 @@ Ensure you have the following installed:
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### **1️⃣ Clone the Repository**
 
