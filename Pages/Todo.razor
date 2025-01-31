@@ -1,0 +1,154 @@
+﻿@page "/todo"
+@using ToDoApp.Data.Models
+@using ToDoApp.Data.Services
+@inject TodoService TodoService
+
+<PageTitle>Todo List</PageTitle>
+
+<div class="container mt-4">
+    <h2 class="text-primary">📌 Todo List</h2>
+
+    <!-- Search Bar -->
+    <div class="input-group mb-3">
+        <span class="input-group-text">🔍</span>
+        <input type="text" class="form-control" @bind="searchTerm" placeholder="Search todos..." @oninput="SearchChanged">
+    </div>
+
+    <!-- Add Todo Form -->
+    <div class="card shadow-sm p-3">
+        <div class="row g-2">
+            <div class="col-md-5">
+                <input type="text" class="form-control" @bind="newTodo.Title" placeholder="Enter Todo Title" required />
+                <span class="text-danger" if="@string.IsNullOrWhiteSpace(newTodo.Title)">Title is required</span>
+            </div>
+            <div class="col-md-5">
+                <textarea class="form-control" @bind="newTodo.TodoDescription" placeholder="Optional: Enter a detailed description"></textarea>
+            </div>
+            <div class="col-md-2 d-grid">
+                <button class="btn btn-success" @onclick="AddTodo">➕ Add Todo</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Todo List Table -->
+    <div class="table-responsive mt-4">
+        <table class="table table-striped table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>Title</th>
+                    <th>Description</th>
+                    <th>Completed</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var todo in FilteredTodos)
+                {
+                    <tr>
+                        <td class="@(todo.IsCompleted ? "text-decoration-line-through text-muted" : "")">
+                            @if (editingId == todo.Id)
+                            {
+                                <input type="text" class="form-control" @bind="todo.Title" />
+                            }
+                            else
+                            {
+                                @todo.Title
+                            }
+                        </td>
+                        <td class="@(todo.IsCompleted ? "text-decoration-line-through text-muted" : "")">
+                            @if (editingId == todo.Id)
+                            {
+                                <textarea class="form-control" @bind="todo.TodoDescription"></textarea>
+                            }
+                            else
+                            {
+                                @todo.TodoDescription
+                            }
+                        </td>
+                        <td class="text-center">
+                            <input type="checkbox" class="form-check-input" checked="@todo.IsCompleted" @onchange="() => ToggleTodo(todo.Id)" />
+                        </td>
+                        <td>
+                            @if (editingId == todo.Id)
+                            {
+                                <button class="btn btn-primary btn-sm me-1" @onclick="() => SaveEdit(todo)">💾 Save</button>
+                            }
+                            else
+                            {
+                                <button class="btn btn-warning btn-sm me-1" @onclick="() => StartEdit(todo.Id)">✏️ Edit</button>
+                                <button class="btn btn-danger btn-sm" @onclick="() => DeleteTodo(todo.Id)">🗑 Delete</button>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@code {
+    private TodoItem newTodo = new();
+    private int editingId;
+    private string searchTerm = "";
+    private List<TodoItem> todos = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadTodos();
+    }
+
+    private async Task LoadTodos()
+    {
+        todos = await TodoService.GetAll(searchTerm);
+    }
+
+    private IEnumerable<TodoItem> FilteredTodos => todos;
+
+    private async Task AddTodo()
+    {
+        if (!string.IsNullOrWhiteSpace(newTodo.Title))
+        {
+            await TodoService.Add(newTodo);
+            newTodo = new TodoItem();
+            await LoadTodos();
+        }
+    }
+
+    private void StartEdit(int id)
+    {
+        editingId = id;
+    }
+
+    private async Task SaveEdit(TodoItem todo)
+    {
+        if (string.IsNullOrWhiteSpace(todo.Title))
+        {
+            return;
+        }
+        await TodoService.Update(todo);
+        editingId = 0;
+        await LoadTodos();
+    }
+
+    private async Task DeleteTodo(int id)
+    {
+        await TodoService.Delete(id);
+        await LoadTodos();
+    }
+
+    private async Task ToggleTodo(int id)
+    {
+        await TodoService.ToggleComplete(id);
+        await LoadTodos();
+    }
+
+    private async Task SearchChanged(ChangeEventArgs e)
+    {
+        var newSearchTerm = e.Value?.ToString() ?? "";
+        if (searchTerm != newSearchTerm)
+        {
+            searchTerm = newSearchTerm;
+            await LoadTodos();
+        }
+    }
+}
