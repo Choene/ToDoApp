@@ -18,8 +18,11 @@
     <div class="card shadow-sm p-3">
         <div class="row g-2">
             <div class="col-md-5">
-                <input type="text" class="form-control" @bind="newTodo.Title" placeholder="Enter Todo Title" required />
-                <span class="text-danger" if="@string.IsNullOrWhiteSpace(newTodo.Title)">Title is required</span>
+                <input type="text" class="form-control" @bind="newTodo.Title" placeholder="Enter Todo Title*" required />
+                @if (isSubmitAttempted && string.IsNullOrWhiteSpace(newTodo.Title))
+                {
+                    <span class="text-danger">Title is required</span>
+                }
             </div>
             <div class="col-md-5">
                 <textarea class="form-control" @bind="newTodo.TodoDescription" placeholder="Optional: Enter a detailed description"></textarea>
@@ -91,6 +94,7 @@
     private int editingId;
     private string searchTerm = "";
     private List<TodoItem> todos = new();
+    private bool isSubmitAttempted = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -106,12 +110,17 @@
 
     private async Task AddTodo()
     {
-        if (!string.IsNullOrWhiteSpace(newTodo.Title))
+        isSubmitAttempted = true;
+
+        if (string.IsNullOrWhiteSpace(newTodo.Title))
         {
-            await TodoService.Add(newTodo);
-            newTodo = new TodoItem();
-            await LoadTodos();
+            return;
         }
+
+        await TodoService.Add(newTodo);
+        newTodo = new TodoItem();
+        isSubmitAttempted = false;
+        await LoadTodos();
     }
 
     private void StartEdit(int id)
