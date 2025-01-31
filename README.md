@@ -20,7 +20,7 @@ Ensure you have the following installed:
 ### **1️⃣ Clone the Repository**
 
 ```sh
-git clone [https://github.com/Choene/ToDoApp.git](https://github.com/Choene/ToDoApp.git)
+git clone https://github.com/Choene/ToDoApp.git
 cd ToDoApp
 ```
 
